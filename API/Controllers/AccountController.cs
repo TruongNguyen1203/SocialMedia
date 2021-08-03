@@ -1,7 +1,10 @@
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
+using API.Service;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +19,15 @@ namespace API.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly TokenService _tokenService;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
 
         public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-            IConfiguration configuration, HttpClient httpClient)
+            TokenService tokenService,
+            IConfiguration configuration)
         {
+            _tokenService = tokenService;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
@@ -29,6 +35,56 @@ namespace API.Controllers
             {
                 BaseAddress = new System.Uri("https://graph.facebook.com")
             };
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email);
+
+            if (user == null) return Unauthorized();
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+
+            if (!result.Succeeded) return Unauthorized();
+
+            return CreateUserObject(user);
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+        {
+            if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
+            {
+                return BadRequest("Email already exist");
+            }
+
+            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username))
+            {
+                return BadRequest("Username already exist");
+            }
+
+            var user = new AppUser()
+            {
+                DisplayName = registerDto.DisplayName,
+                UserName = registerDto.Username,
+                Email = registerDto.Email
+            };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+            if (!result.Succeeded) return BadRequest("Something wrong when create user");
+
+            return CreateUserObject(user);
+
+        }
+        
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        {
+            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+            return CreateUserObject(user);
         }
 
         [HttpPost("fbLogin")]
@@ -73,7 +129,7 @@ namespace API.Controllers
             {
                 DisplayName = user.DisplayName,
                 UserName = user.UserName,
-                Token = "this is token",
+                Token = _tokenService.CreateToken(user),
                 Image = "This is image"
             };
         }
