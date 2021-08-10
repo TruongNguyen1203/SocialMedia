@@ -22,6 +22,7 @@ namespace API.Controllers
         private readonly TokenService _tokenService;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        
 
         public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
             TokenService tokenService,

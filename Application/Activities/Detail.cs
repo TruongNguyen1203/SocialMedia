@@ -1,30 +1,37 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Activities
 {
     public class Detail
     {
-        public class Query : IRequest<Activity>
+        public class Query : IRequest<ActivityDto>
         {
             public Guid Id { get; set; }
         }
         
-        public class Handler : IRequestHandler<Query, Activity>
+        public class Handler : IRequestHandler<Query, ActivityDto>
         {
             private readonly DataContext _context;
+            private readonly IMapper _mapper;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context, IMapper mapper)
             {
                 _context = context;
+                _mapper = mapper;
             }
-            public async Task<Activity> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<ActivityDto> Handle(Query request, CancellationToken cancellationToken)
             {
-                return await _context.Activities.FindAsync(request.Id);
+                var acti =  await _context.Activities
+                                                .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
+                                                .FirstOrDefaultAsync(x => x.Id == request.Id);
+                return acti;
             }
         }
     }

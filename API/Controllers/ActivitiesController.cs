@@ -14,13 +14,13 @@ namespace API.Controllers
     public class ActivitiesController : BaseApiController
     {
         [HttpGet]
-        public async Task<ActionResult<List<Activity>>> GetActivities()
+        public async Task<ActionResult<List<ActivityDto>>> GetActivities()
         {
             return await Mediator.Send(new List.Query());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Activity>> GetActivity(Guid id)
+        public async Task<ActionResult<ActivityDto>> GetActivity(Guid id)
         {
             return await Mediator.Send(new Detail.Query() {Id = id});
         }
@@ -32,15 +32,23 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "IsActivityHost")]
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
             return Ok(await Mediator.Send(new Delete.Command() {Id = id}));
         }
         [HttpPut("{id}")]
+        [Authorize(Policy = "IsActivityHost")]
         public async Task<IActionResult> UpdateActivity(Guid id, Activity activity)
         {
             activity.Id = id;
             return Ok(await Mediator.Send(new Edit.Command() {Activity = activity}));
+        }
+
+        [HttpPost("{id}/attend")]
+        public async Task<IActionResult> Attend(Guid id)
+        {
+            return Ok(await Mediator.Send(new UpdateAttendance.Command(){ Id = id}));
         }
     }
 }
