@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email);
+            var user = await _userManager.Users.Include(x => x.Photos).FirstOrDefaultAsync(x => x.Email == loginDto.Email);
 
             if (user == null) return Unauthorized();
 
@@ -84,7 +85,8 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+            var user = await _userManager.Users.Include(x => x.Photos)
+                .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
             return CreateUserObject(user);
         }
 
@@ -106,7 +108,7 @@ namespace API.Controllers
 
             var username = (string) fbInfo.id;
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == username);
+            var user = await _userManager.Users.Include(x => x.Photos).FirstOrDefaultAsync(x => x.UserName == username);
 
             if (user != null) return CreateUserObject(user);
 
@@ -131,7 +133,7 @@ namespace API.Controllers
                 DisplayName = user.DisplayName,
                 UserName = user.UserName,
                 Token = _tokenService.CreateToken(user),
-                Image = "This is image"
+                Image = user?.Photos?.FirstOrDefault(x => x.IsMain)?.Url
             };
         }
     }
