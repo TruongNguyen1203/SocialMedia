@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Core;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain;
@@ -12,12 +13,12 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<List<ActivityDto>>
+        public class Query : IRequest<Result<List<ActivityDto>>>
         {
             
         }
         
-        public class Handler : IRequestHandler<Query, List<ActivityDto>>
+        public class Handler : IRequestHandler<Query, Result<List<ActivityDto>>>
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
@@ -27,12 +28,12 @@ namespace Application.Activities
                 _context = context;
                 _mapper = mapper;
             }
-            public async Task<List<ActivityDto>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<List<ActivityDto>>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var activities = await _context.Activities.Include(x => x.Attendees).ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
 
-                return activities;
+                return Result<List<ActivityDto>>.Success(activities);
             }
         }
     }

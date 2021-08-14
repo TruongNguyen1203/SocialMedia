@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Core;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
@@ -11,12 +12,12 @@ namespace Application.Activities
 {
     public class Detail
     {
-        public class Query : IRequest<ActivityDto>
+        public class Query : IRequest<Result<ActivityDto>>
         {
             public Guid Id { get; set; }
         }
         
-        public class Handler : IRequestHandler<Query, ActivityDto>
+        public class Handler : IRequestHandler<Query, Result<ActivityDto>>
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
@@ -26,12 +27,12 @@ namespace Application.Activities
                 _context = context;
                 _mapper = mapper;
             }
-            public async Task<ActivityDto> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<ActivityDto>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var acti =  await _context.Activities
+                var activity =  await _context.Activities
                                                 .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
                                                 .FirstOrDefaultAsync(x => x.Id == request.Id);
-                return acti;
+                return Result<ActivityDto>.Success(activity);
             }
         }
     }

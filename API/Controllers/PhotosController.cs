@@ -13,19 +13,19 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPhoto([FromForm] IFormFile file)
         {
-            return Ok(await Mediator.Send(new Add.Command() {File = file}));
+            return HandleResult(await Mediator.Send(new Add.Command() {File = file}));
         }
 
         [HttpPost("{id}/setMain")]
         public async Task<IActionResult> SetMain(string id)
         {
-            return Ok(await Mediator.Send(new SetMain.Command(){Id = id}));
+            return HandleResult(await Mediator.Send(new SetMain.Command(){Id = id}));
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhoto(string id)
         {
-            return Ok(await Mediator.Send(new Delete.Command() {Id = id}));
+            return HandleResult(await Mediator.Send(new Delete.Command() {Id = id}));
         }
     }
 }
