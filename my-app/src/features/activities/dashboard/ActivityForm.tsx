@@ -1,13 +1,11 @@
-import React, { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { Button, Form } from 'semantic-ui-react';
-import { Activity } from '../../../app/models/activity';
+import { useStore } from '../../../app/stores/store';
 
-interface Props{
-    selectedActivity: Activity | undefined;
-    closeForm: () => void;
-    createOrEdit: (activity : Activity) => void;
-}
-function ActivityForm({selectedActivity, closeForm, createOrEdit} : Props){
+
+function ActivityForm(){
+  const {activityStore} = useStore();
+  const {selectedActivity, closeForm, updateActivity, createActivity} = activityStore;
 
   const initialState = selectedActivity ? selectedActivity : {
     id: '',
@@ -30,14 +28,14 @@ function ActivityForm({selectedActivity, closeForm, createOrEdit} : Props){
   }
 
   function handelSubmitForm(){
-    createOrEdit(activity)
+    activity.id ? updateActivity(activity) : createActivity(activity);
   }
   return (
     <Form onSubmit={handelSubmitForm} autoComplete='off'>
     <Form.Input name='title' placeholder='Title' value={activity.title} onChange={handleChange} />
     <Form.TextArea name='description' placeholder='Description' value={activity.description} onChange={handleChange} />
     <Form.Input name='category' placeholder='Category' value={activity.category} onChange={handleChange}  />
-    <Form.Input name='date' placeholder='Date' value={activity.date} onChange={handleChange}  />
+    <Form.Input type='date' name='date' placeholder='Date' value={activity.date} onChange={handleChange}  />
     <Form.Input name='city' placeholder='City' value={activity.city} onChange={handleChange}  />
     <Form.Input name='venue' placeholder='Venue' value={activity.venue} onChange={handleChange} />
     

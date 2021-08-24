@@ -4,11 +4,16 @@ import './app/layout/styles.css';
 
 import reportWebVitals from './app/reportWebVitals';
 import App from './app/layout/App';
+import { StoreContext, store } from './app/stores/store';
+
 
 ReactDOM.render(
-  <React.StrictMode>
+
+  <StoreContext.Provider value={store}>
     <App />
-  </React.StrictMode>,
+  </StoreContext.Provider>
+
+  ,
   document.getElementById('root')
 );
 

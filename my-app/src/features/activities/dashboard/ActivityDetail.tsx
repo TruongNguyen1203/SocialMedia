@@ -1,14 +1,13 @@
 import { Card, Image, Button } from 'semantic-ui-react';
 
-import { Activity } from '../../../app/models/activity';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-  selectedActivity: Activity;
-  cancelSelectActivity: () => void;
-  openForm: (id: string) => void;
-}
 
-function ActivityDetail({ selectedActivity, cancelSelectActivity, openForm }: Props) {
+function ActivityDetail() {
+  const {activityStore} = useStore();
+  const {selectedActivity, openForm, setCancelSelectedActivity} = activityStore;
+
+  if(selectedActivity === undefined) return null;
   const photo = require(`../../../app/layout/assets/categoryImages/${selectedActivity.category}.jpg`).default;
   return (
     <Card fluid>
@@ -27,7 +26,7 @@ function ActivityDetail({ selectedActivity, cancelSelectActivity, openForm }: Pr
           <Button onClick={() => openForm(selectedActivity.id)} basic color='blue'>
             Edit
           </Button>
-          <Button onClick={() => cancelSelectActivity()} basic color='grey'>
+          <Button onClick={() => setCancelSelectedActivity()} basic color='grey'>
             Cancel
           </Button>
         </div>
