@@ -1,13 +1,16 @@
-import { ChangeEvent, useState } from 'react'
+import { observer } from 'mobx-react-lite';
+import { ChangeEvent, useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom';
 import { Button, Form } from 'semantic-ui-react';
 import { useStore } from '../../../app/stores/store';
 
 
 function ActivityForm(){
   const {activityStore} = useStore();
-  const {selectedActivity, closeForm, updateActivity, createActivity} = activityStore;
+  const {updateActivity, createActivity, loadActivity} = activityStore;
+  const {id} = useParams<{id : string}>();
 
-  const initialState = selectedActivity ? selectedActivity : {
+  const [activity, setActivity] = useState({
     id: '',
     title: '',
     category: '',
@@ -15,9 +18,13 @@ function ActivityForm(){
     date: '',
     city: '',
     venue: ''
-  }
+  });
 
-  const [activity, setActivity] = useState(initialState);
+  useEffect(() => {
+    if(id) loadActivity(id).then(activity => setActivity(activity!))
+  },[id, loadActivity]);
+
+  
 
   function handleChange(event : ChangeEvent<HTMLInputElement | HTMLTextAreaElement>){
     const value = event.target.value;
@@ -39,11 +46,11 @@ function ActivityForm(){
     <Form.Input name='city' placeholder='City' value={activity.city} onChange={handleChange}  />
     <Form.Input name='venue' placeholder='Venue' value={activity.venue} onChange={handleChange} />
     
-    <Button floated='right' onClick={() => closeForm()} color = 'grey'>Cancel</Button>
+    <Button as = {Link} to={`/activities`} floated='right' color = 'grey'>Cancel</Button>
     <Button floated='right' type='submit' color = 'green'>Submit</Button>
   </Form>
 
   )
 }
 
-export default ActivityForm
+export default observer(ActivityForm)

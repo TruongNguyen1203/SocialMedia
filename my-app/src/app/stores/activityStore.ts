@@ -19,6 +19,19 @@ export default class activityStore {
       (a, b) => Date.parse(a.date) - Date.parse(b.date)
     );
   }
+
+  get groupListActivity(){
+    return Object.entries(
+      this.activitiesByDate.reduce((activities, activity) => {
+        const date = activity.date;
+        activities[date] = activities[date] ? [...activities[date],activity] : [activity];
+        return activities;
+      }, {} as {[key : string] : Activity[]} )
+    )
+  
+    
+    
+  }
   loadActivities = async () => {
     try {
       const activities = await axios
@@ -34,6 +47,36 @@ export default class activityStore {
       console.log(error);
     }
   };
+
+  loadActivity = async (id : string) => {
+    let activity = this.activityRegistry.get(id);
+    console.log(activity);
+    if(activity){
+      this.selectedActivity = activity;
+      console.log(activity);
+      return activity;
+    }
+    else {
+      try{
+        activity =  await axios.get(`/api/activities/${id}`).then(function (response){
+          return response.data;
+        });
+        if(activity){
+          activity.date = activity.date.split('T')[0];
+          this.activityRegistry.set(activity.id, activity);
+          this.selectedActivity = activity;
+          return activity;
+        }
+        else{
+          this.selectedActivity = undefined;
+        }
+      }
+      catch(error){
+        console.log(error);
+      }
+  
+    }
+  }
 
   setSelectedActivity = (id : string) =>{
       this.selectedActivity = this.activityRegistry.get(id);

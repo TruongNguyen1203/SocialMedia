@@ -1,43 +1,26 @@
 import { observer } from 'mobx-react-lite';
-import { Button, Item, Label, Segment } from 'semantic-ui-react';
+import { Fragment } from 'react';
+import { Header } from 'semantic-ui-react';
 import { useStore } from '../../../app/stores/store';
+import ActivityListItem from './ActivityListItem';
 
 
-function ActivityList () {
-    const {activityStore} = useStore();
-    const {activitiesByDate, setSelectedActivity, deleteActivity} = activityStore;
+function ActivityList() {
+    const { activityStore } = useStore();
+    const { groupListActivity } = activityStore;
+    console.log('hello');
     return (
-        <Segment>
-            <Item.Group divided>
-                {activitiesByDate.map(activity => (
-                    <Item key={activity.id}>
-                        <Item.Content>
-                            <Item.Header as='a'>{activity.title}</Item.Header>
-                            <Item.Meta>
-                                <span className='cinema'>{activity.date}</span>
-                            </Item.Meta>
-                            <Item.Description>{activity.description}</Item.Description>
-                            <Item.Description>{activity.city}, {activity.venue}</Item.Description>
-                            <Item.Extra>
-                                <Label>{activity.category}</Label>
+        <>
+            {groupListActivity.map(([group, activities]) => (
+                <Fragment key={group} >
+                    <Header sub color='teal'>{group}</Header>
+                    {activities.map((activity) => (
+                        <ActivityListItem key={activity.id} activity={activity} />
+                    ))}
 
-                                <Button floated='right' color='blue' onClick={() => setSelectedActivity(activity.id)}>
-                                    View
-
-                                </Button>
-                                <Button floated='right' color='red' onClick={() => deleteActivity(activity.id)}>
-                                    Delete
-
-                                </Button>
-                            </Item.Extra>
-                        </Item.Content>
-                    </Item>
-                ))}
-
-
-            </Item.Group>
-        </Segment>
-
+                </Fragment>
+            ))}
+        </>
     )
 }
 
